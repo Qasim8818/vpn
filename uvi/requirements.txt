@@ -1,0 +1,33 @@
+# UVI Requirements - Python Dependencies
+
+# PyTorch for training
+torch>=2.0.0
+torchvision>=0.15.0
+
+# IOTA/DAG integration
+iota-client>=2.0.0
+
+# HTTP & gRPC
+requests>=2.31.0
+grpcio>=1.56.0
+grpcio-tools>=1.56.0
+
+# Data & crypto
+numpy>=1.24.0
+cryptography>=41.0.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+
+# JSON & serialization
+pyaml>=23.0.0
+msgpack>=1.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Utilities
+python-dateutil>=2.8.0
+tqdm>=4.65.0
+colorama>=0.4.6

@@ -1,0 +1,196 @@
+version: "3.8"
+
+services:
+  # ============ IOTA Node (DAG Ledger) ============
+  iota:
+    image: iotaledger/hornet:latest
+    container_name: uvi-iota
+    ports:
+      - "14265:14265"
+      - "14266:14266"
+      - "14267:14267"
+    environment:
+      - IOTA_MILESTONES_COORDINATOR=https://api.iota.org
+    volumes:
+      - iota-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:14265/api/v1/info"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uvi-network
+
+  # ============ ZK Prover Service ============
+  zkprover:
+    build:
+      context: ./zk
+      dockerfile: Dockerfile
+    container_name: uvi-zkprover
+    ports:
+      - "8081:8081"
+    environment:
+      - ZK_PORT=8081
+      - IOTA_URL=http://iota:14265
+    depends_on:
+      iota:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uvi-network
+
+  # ============ UVI Agent ============
+  agent:
+    build:
+      context: ./
+      dockerfile: Dockerfile.agent
+    container_name: uvi-agent
+    ports:
+      - "8082:8082"
+    environment:
+      - AGENT_ID=device-primary
+      - ZK_PROVER_URL=http://zkprover:8081
+      - IOTA_URL=http://iota:14265
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./agent:/app/agent
+      - agent-data:/app/data
+    depends_on:
+      zkprover:
+        condition: service_healthy
+      iota:
+        condition: service_healthy
+    networks:
+      - uvi-network
+
+  # ============ Aggregator ============
+  aggregator:
+    build:
+      context: ./
+      dockerfile: Dockerfile.aggregator
+    container_name: uvi-aggregator
+    ports:
+      - "8083:8083"
+    environment:
+      - AGGREGATOR_ID=aggregator-primary
+      - IOTA_URL=http://iota:14265
+      - ZK_PROVER_URL=http://zkprover:8081
+      - THRESHOLD_GRADIENTS=10
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./aggregator:/app/aggregator
+      - aggregator-data:/app/data
+    depends_on:
+      iota:
+        condition: service_healthy
+      zkprover:
+        condition: service_healthy
+    networks:
+      - uvi-network
+
+  # ============ DAO Governance Service ============
+  dao:
+    build:
+      context: ./governance
+      dockerfile: Dockerfile
+    container_name: uvi-dao
+    ports:
+      - "8084:8084"
+    environment:
+      - DAO_ID=uvi-governance-1
+      - IOTA_URL=http://iota:14265
+      - AGGREGATOR_URL=http://aggregator:8083
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./governance:/app/governance
+      - dao-data:/app/data
+    depends_on:
+      iota:
+        condition: service_healthy
+      aggregator:
+        condition: service_healthy
+    networks:
+      - uvi-network
+
+  # ============ Verifier API (Public Query Interface) ============
+  verifier:
+    build:
+      context: ./verifier
+      dockerfile: Dockerfile
+    container_name: uvi-verifier
+    ports:
+      - "8085:8085"
+    environment:
+      - VERIFIER_ID=uvi-verifier-1
+      - IOTA_URL=http://iota:14265
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./verifier:/app/verifier
+    depends_on:
+      iota:
+        condition: service_healthy
+    networks:
+      - uvi-network
+
+  # ============ Frontend Dashboard ============
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: uvi-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://verifier:8085
+      - REACT_APP_IOTA_URL=http://iota:14265
+    volumes:
+      - ./frontend:/app/frontend
+    depends_on:
+      - verifier
+    networks:
+      - uvi-network
+
+  # ============ Monitoring (Prometheus + Grafana) ============
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: uvi-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - uvi-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: uvi-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - uvi-network
+
+volumes:
+  iota-data:
+  agent-data:
+  aggregator-data:
+  dao-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  uvi-network:
+    driver: bridge
