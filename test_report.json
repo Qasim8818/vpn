@@ -1,0 +1,80 @@
+{
+  "project": "VPN Curriculum & UVI System",
+  "timestamp": "2026-04-14T17:01:35.116673",
+  "categories": {
+    "Structure": {
+      "status": "PASS",
+      "items": [
+        "\u2713 ollama/ - Ollama LLM integration (4 items)",
+        "\u2713 qdrant/ - Qdrant vector memory (4 items)",
+        "\u2713 continue/ - RAG/codebase indexing (5 items)",
+        "\u2713 uvi/ - Universal Verifiable Intelligence (14 items)",
+        "\u2713 code-examples/ - Security code examples (14 items)",
+        "\u2713 level-iii/ - Advanced documentation (13 items)"
+      ]
+    },
+    "Python Files": {
+      "status": "PASS",
+      "items": [
+        "\u2713 local_agent.py - Syntax valid",
+        "\u2713 agent_cli.py - Syntax valid",
+        "\u2713 agent_daemon.py - Syntax valid",
+        "\u2713 validate.py - Syntax valid",
+        "\u2713 examples.py - Syntax valid"
+      ]
+    },
+    "Configuration": {
+      "status": "PASS",
+      "items": [
+        "\u2713 config.json - Main configuration (1.3 KB)",
+        "\u2713 uvi/docker-compose.yml - Docker composition (4.4 KB)"
+      ]
+    },
+    "Documentation": {
+      "status": "PASS",
+      "items": [
+        "\u2713 README.md - Project overview (~1848 words)",
+        "\u2713 ARCHITECTURE.md - System architecture (~2610 words)",
+        "\u2713 QUICKSTART.md - Quick start guide (~1373 words)",
+        "\u2713 uvi/README.md - UVI system guide (~2213 words)",
+        "\u2713 uvi/ARCHITECTURE.md - UVI architecture (~2943 words)",
+        "\u2713 uvi/8WEEK_PLAN.md - 8-week implementation plan (~8111 words)"
+      ]
+    },
+    "Dependencies": {
+      "status": "PASS",
+      "items": [
+        "\u2713 requirements.txt - Main project (7 packages)",
+        "\u2713 uvi/requirements.txt - UVI subsystem (18 packages)"
+      ]
+    },
+    "Code Examples": {
+      "status": "PASS",
+      "items": [
+        "\u2713 04-zk-proofs/ - Zero-knowledge proofs (Circom) (.circom .md)",
+        "\u2713 06-ring-sigs/ - Ring signatures (Rust) (.md .rs)",
+        "\u2713 07-mpc/ - Multi-party computation (Go) (.go .md)",
+        "\u2713 09-multipath/ - Multipath scheduling (Go) (.go .md)",
+        "\u2713 11-fuzzing/ - Protocol fuzzing (Rust) (.md .rs)",
+        "\u2713 17-mixnet/ - Mixnet implementation (Go) (.go .md)",
+        "\u2713 24-pq-migration/ - Post-quantum migration (Go) (.go .md)"
+      ]
+    },
+    "Module Imports": {
+      "status": "PASS",
+      "items": [
+        "\u2713 local_agent.LocalAgent - Main agent orchestrator \u2713",
+        "\u2713 qdrant.local_memory.LocalMemory - Vector memory system \u2713",
+        "\u26a0\ufe0f  ollama.ollama_client.OllamaClient - No module named 'ollama.ollama_client'",
+        "\u2713 uvi.agent.uvi_agent - UVI agent module \u2713"
+      ]
+    },
+    "Service Status": {
+      "status": "INFO",
+      "items": [
+        "\u2713 Ollama - RUNNING (LLM inference engine)",
+        "\u2298 Qdrant - Not running (Vector database)"
+      ]
+    }
+  }
+}
