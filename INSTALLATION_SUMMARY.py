@@ -105,9 +105,9 @@ def main():
     print("\n" + "="*70)
     print("🚀 NEXT STEPS (Choose One):")
     print("="*70)
-    print("""
+    print(f"""
 1️⃣  QUICK START (5 minutes)
-    $ cd /home/killer123/Desktop/vpn
+    $ cd {vpn_dir}
     $ python3 validate.py              # Verify installation
     $ python3 agent_cli.py             # Launch interactive mode
     

@@ -50,9 +50,8 @@ class OllamaClient:
                     "stream": False,
                     "raw": False,
                     "options": {
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "eos_token_id": 100000,
+                        "temperature": self.temperature,
+                        "top_p": self.top_p,
                     }
                 },
                 timeout=300
