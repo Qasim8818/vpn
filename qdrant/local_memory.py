@@ -17,7 +17,7 @@ class LocalMemory:
             "conversations": "conversation_history",
             "learnings": "learned_patterns"
         }
-        self.vector_size = 384  # nomic-embed-text output size
+        self.vector_size = 768  # nomic-embed-text output size
         self._initialize_collections()
     
     def _initialize_collections(self):
@@ -25,7 +25,7 @@ class LocalMemory:
         for collection_name in self.collections.values():
             try:
                 self.client.get_collection(collection_name)
-            except:
+            except Exception:
                 self.client.recreate_collection(
                     collection_name=collection_name,
                     vectors_config=VectorParams(
@@ -174,7 +174,7 @@ class LocalMemory:
                     "point_count": info.points_count,
                     "vector_size": self.vector_size
                 }
-            except:
+            except Exception:
                 stats[collection_name] = {"error": "Collection not found"}
         
         return stats

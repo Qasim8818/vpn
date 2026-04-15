@@ -18,7 +18,7 @@ def check_file_exists(path):
     return "✗ MISSING"
 
 def main():
-    vpn_dir = Path("/home/killer123/Desktop/vpn")
+    vpn_dir = Path(os.path.dirname(os.path.abspath(__file__)))
     
     print("\n" + "="*70)
     print("🎉 LocalAgent Installation Summary")

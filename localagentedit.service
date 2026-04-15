@@ -1,17 +1,18 @@
 [Unit]
 Description=LocalAgent 24/7 Background Service
-Documentation=file:///home/killer123/Desktop/vpn/README.md
-After=network.target
+After=network.target docker.service
+Wants=docker.service
 
 [Service]
 Type=simple
-User=killer123
-WorkingDirectory=/home/killer123/Desktop/vpn
-ExecStart=/usr/bin/python3 /home/killer123/Desktop/vpn/agent_daemon.py
+User=%i
+WorkingDirectory=%h/Desktop/vpn
+ExecStart=/usr/bin/python3 %h/Desktop/vpn/agent_daemon.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target

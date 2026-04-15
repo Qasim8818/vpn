@@ -4,7 +4,10 @@ Complete example demonstrating LocalAgent with real data and workflows.
 """
 
 import sys
-sys.path.insert(0, "/home/killer123/Desktop/vpn")
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _BASE_DIR)
 
 from local_agent import LocalAgent
 import time
@@ -97,7 +100,7 @@ def example_codebase_rag():
     
     # Index the VPN codebase
     print("📚 Indexing local codebase...\n")
-    stats = agent.index_codebase("/home/killer123/Desktop/vpn")
+    stats = agent.index_codebase(_BASE_DIR)
     
     print(f"\n✓ Indexed {stats['indexed']} code chunks from {stats['total']} files")
     

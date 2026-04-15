@@ -2,21 +2,41 @@ import requests
 import json
 from typing import Optional, Dict, Any, List
 import time
+import os
 
 class OllamaClient:
     """Local LLM client for Ollama with chain-of-thought reasoning."""
     
-    def __init__(self, host: str = "localhost", port: int = 11434):
-        self.base_url = f"http://{host}:{port}"
-        self.model = "deepseek-r1:14b"
-        self.embedding_model = "nomic-embed-text"
+    def __init__(self, host: str = None, port: int = None):
+        config = self._load_config().get("ollama", {})
+        _host = host or config.get("host", "localhost")
+        _port = port or config.get("port", 11434)
+        self.base_url = f"http://{_host}:{_port}"
+        self.model = config.get("model", "deepseek-r1:14b")
+        self.embedding_model = config.get("embedding_model", "nomic-embed-text")
+        self.temperature = config.get("temperature", 0.7)
+        self.top_p = config.get("top_p", 0.9)
+        self.thinking_budget = config.get("thinking_budget", 8000)
+    
+    @staticmethod
+    def _load_config() -> dict:
+        """Load config.json from project root."""
+        config_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "config.json"
+        )
+        try:
+            with open(config_path) as f:
+                return json.load(f)
+        except Exception:
+            return {}
     
     def health_check(self) -> bool:
         """Check if Ollama is running."""
         try:
             response = requests.get(f"{self.base_url}/api/tags", timeout=5)
             return response.status_code == 200
-        except:
+        except Exception:
             return False
     
     def generate(self, prompt: str, thinking_budget: int = 8000) -> Dict[str, Any]:

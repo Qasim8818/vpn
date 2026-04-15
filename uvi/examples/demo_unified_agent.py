@@ -4,7 +4,10 @@ Shows state, actions, and gradient contributions
 """
 
 import sys
-sys.path.insert(0, '/home/killer123/Desktop/vpn/uvi')
+import os
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _BASE_DIR)
 
 from agent.uvi_agent import UVIAgent
 import json

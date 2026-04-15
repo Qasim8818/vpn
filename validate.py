@@ -5,7 +5,10 @@ Verifies all components are working correctly.
 """
 
 import sys
-sys.path.insert(0, "/home/killer123/Desktop/vpn")
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _BASE_DIR)
 
 from local_agent import LocalAgent
 import json
@@ -141,7 +144,7 @@ class SystemValidator:
             agent = LocalAgent()
             
             # Index the current directory
-            stats = agent.index_codebase("/home/killer123/Desktop/vpn")
+            stats = agent.index_codebase(_BASE_DIR)
             
             if stats["indexed"] > 0:
                 print(f"  ✓ Indexed {stats['indexed']} chunks from {stats['total']} files")

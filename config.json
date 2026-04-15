@@ -16,7 +16,7 @@
   "qdrant": {
     "host": "localhost",
     "port": 6333,
-    "vector_size": 384,
+    "vector_size": 768,
     "distance_metric": "cosine",
     "collections": {
       "facts": "user_facts",
@@ -40,7 +40,7 @@
     ]
   },
   "daemon": {
-    "log_file": "/home/killer123/Desktop/vpn/agent_daemon.log",
+    "log_file": "agent_daemon.log",
     "check_interval_seconds": 30,
     "enable_health_checks": true
   },

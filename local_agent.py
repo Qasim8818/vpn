@@ -1,7 +1,10 @@
 import sys
-sys.path.insert(0, "/home/killer123/Desktop/vpn/ollama")
-sys.path.insert(0, "/home/killer123/Desktop/vpn/qdrant")
-sys.path.insert(0, "/home/killer123/Desktop/vpn/continue")
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(_BASE_DIR, "ollama"))
+sys.path.insert(0, os.path.join(_BASE_DIR, "qdrant"))
+sys.path.insert(0, os.path.join(_BASE_DIR, "continue"))
 
 from ollama_client import OllamaClient
 from local_memory import LocalMemory
@@ -35,7 +38,7 @@ class LocalAgent:
         try:
             memory_stats = self.memory.get_collection_stats()
             memory_ok = True
-        except:
+        except Exception:
             memory_ok = False
             memory_stats = {}
         

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import sys
-sys.path.insert(0, "/home/killer123/Desktop/vpn")
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _BASE_DIR)
 
 from local_agent import LocalAgent
 import json

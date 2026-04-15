@@ -4,7 +4,10 @@ Shows gradient submission and aggregation
 """
 
 import sys
-sys.path.insert(0, '/home/killer123/Desktop/vpn/uvi')
+import os
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _BASE_DIR)
 
 from aggregator.aggregator import Aggregator
 import hashlib

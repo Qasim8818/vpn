@@ -12,7 +12,7 @@ class LocalRAG:
     def __init__(self, host: str = "localhost", port: int = 6333):
         self.client = QdrantClient(host=host, port=port)
         self.collection_name = "codebase_index"
-        self.vector_size = 384
+        self.vector_size = 768  # nomic-embed-text output size
         self._initialize_collection()
         self.supported_extensions = {
             ".py": "python",
@@ -34,7 +34,7 @@ class LocalRAG:
         """Create codebase index collection."""
         try:
             self.client.get_collection(self.collection_name)
-        except:
+        except Exception:
             self.client.recreate_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(
@@ -81,7 +81,7 @@ class LocalRAG:
         try:
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-        except:
+        except Exception:
             return 0
         
         # Split into chunks (e.g., 500 characters per chunk)
@@ -148,7 +148,7 @@ class LocalRAG:
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
             return content[:5000]  # Return first 5000 chars
-        except:
+        except Exception:
             return None
     
     def clear_index(self):

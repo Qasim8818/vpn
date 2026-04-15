@@ -5,7 +5,10 @@ Runs continuously in the background for always-on assistance.
 """
 
 import sys
-sys.path.insert(0, "/home/killer123/Desktop/vpn")
+import os
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _BASE_DIR)
 
 from local_agent import LocalAgent
 import time
@@ -21,7 +24,7 @@ class AgentDaemon:
         self.running = True
         self.start_time = datetime.now()
         self.queries_processed = 0
-        self.log_file = "/home/killer123/Desktop/vpn/agent_daemon.log"
+        self.log_file = os.path.join(_BASE_DIR, "agent_daemon.log")
         
         # Register signal handlers
         signal.signal(signal.SIGTERM, self._handle_shutdown)
@@ -43,7 +46,7 @@ class AgentDaemon:
         try:
             with open(self.log_file, "a") as f:
                 f.write(log_message + "\n")
-        except:
+        except Exception:
             pass
     
     def _print_statistics(self):
