@@ -1,4 +1,5 @@
 from qdrant_client import QdrantClient
+from qdrant_client.http import models as qdrant_models
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from typing import List, Dict, Optional, Any
 import uuid
@@ -23,10 +24,8 @@ class LocalMemory:
     def _initialize_collections(self):
         """Create collections if they don't exist."""
         for collection_name in self.collections.values():
-            try:
-                self.client.get_collection(collection_name)
-            except Exception:
-                self.client.recreate_collection(
+            if not self.client.collection_exists(collection_name):
+                self.client.create_collection(
                     collection_name=collection_name,
                     vectors_config=VectorParams(
                         size=self.vector_size,
@@ -43,7 +42,7 @@ class LocalMemory:
             embedding = [0.0] * self.vector_size  # Placeholder
         
         point = PointStruct(
-            id=hash(fact_id) % (2**31),
+            id=uuid.UUID(fact_id).int,
             vector=embedding,
             payload={
                 "fact": fact,
@@ -70,7 +69,7 @@ class LocalMemory:
             embedding = [0.0] * self.vector_size
         
         point = PointStruct(
-            id=hash(pref_id) % (2**31),
+            id=uuid.UUID(pref_id).int,
             vector=embedding,
             payload={
                 "key": key,
@@ -97,7 +96,7 @@ class LocalMemory:
             embedding = [0.0] * self.vector_size
         
         point = PointStruct(
-            id=hash(snippet_id) % (2**31),
+            id=uuid.UUID(snippet_id).int,
             vector=embedding,
             payload={
                 "language": language,
@@ -145,7 +144,7 @@ class LocalMemory:
             embedding = [0.0] * self.vector_size
         
         point = PointStruct(
-            id=hash(conv_id) % (2**31),
+            id=uuid.UUID(conv_id).int,
             vector=embedding,
             payload={
                 "user_input": user_input,
@@ -183,11 +182,15 @@ class LocalMemory:
         """Clear a specific collection."""
         collection_name = self.collections.get(collection)
         if collection_name:
-            self.client.delete_collection(collection_name)
-            self.client.recreate_collection(
-                collection_name=collection_name,
-                vectors_config=VectorParams(
-                    size=self.vector_size,
-                    distance=Distance.COSINE
+            try:
+                self.client.delete_collection(collection_name)
+            except:
+                pass
+            if not self.client.collection_exists(collection_name):
+                self.client.create_collection(
+                    collection_name=collection_name,
+                    vectors_config=VectorParams(
+                        size=self.vector_size,
+                        distance=Distance.COSINE
+                    )
                 )
-            )

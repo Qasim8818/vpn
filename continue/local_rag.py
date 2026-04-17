@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from qdrant_client import QdrantClient
+from qdrant_client.http import models as qdrant_models
 from qdrant_client.models import VectorParams, Distance, PointStruct
 import uuid
 from datetime import datetime
@@ -32,10 +33,8 @@ class LocalRAG:
     
     def _initialize_collection(self):
         """Create codebase index collection."""
-        try:
-            self.client.get_collection(self.collection_name)
-        except Exception:
-            self.client.recreate_collection(
+        if not self.client.collection_exists(self.collection_name):
+            self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(
                     size=self.vector_size,
@@ -97,7 +96,7 @@ class LocalRAG:
             embedding = embedding_func(chunk) if embedding_func else [0.0] * self.vector_size
             
             point = PointStruct(
-                id=hash(chunk_id) % (2**31),
+                id=uuid.UUID(chunk_id).int,
                 vector=embedding,
                 payload={
                     "file_path": str(filepath),

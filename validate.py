@@ -75,7 +75,7 @@ class SystemValidator:
             test_text = "This is a test string for embedding"
             embedding = agent.ollama.embed(test_text)
             
-            if embedding and len(embedding) == 384:
+            if embedding and len(embedding) == 768:
                 print(f"  ✓ Generated embedding with {len(embedding)} dimensions")
                 self.results["tests"]["embeddings"] = "PASS"
                 return True
