@@ -11,10 +11,12 @@ class LocalRAG:
     """Retrieval-Augmented Generation system using local codebase and documents."""
     
     def __init__(self, host: str = "localhost", port: int = 6333):
-        self.client = QdrantClient(host=host, port=port)
+        self.host = host
+        self.port = port
+        self.client: Optional[QdrantClient] = None
+        self.available = False
         self.collection_name = "codebase_index"
         self.vector_size = 768  # nomic-embed-text output size
-        self._initialize_collection()
         self.supported_extensions = {
             ".py": "python",
             ".js": "javascript",
@@ -30,9 +32,27 @@ class LocalRAG:
             ".yaml": "yaml",
             ".json": "json"
         }
+        
+        self._connect()
+    
+    def _connect(self):
+        """Connect to Qdrant with error handling."""
+        try:
+            self.client = QdrantClient(host=self.host, port=self.port)
+            self._initialize_collection()
+            self.available = True
+            print("LocalRAG Qdrant ready")
+        except Exception as e:
+            print("LocalRAG Qdrant not available:", str(e)[:100])
+            print("Start Qdrant: docker run -d -p 6333:6333 qdrant/qdrant")
+            print("Continuing without RAG indexing")
+            self.client = None
+            self.available = False
     
     def _initialize_collection(self):
         """Create codebase index collection."""
+        if self.client is None:
+            return
         if not self.client.collection_exists(self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
@@ -41,10 +61,12 @@ class LocalRAG:
                     distance=Distance.COSINE
                 )
             )
-            print(f"✓ Created codebase index collection")
+            print("Created codebase index collection")
     
     def index_directory(self, root_path: str, embedding_func=None) -> Dict[str, int]:
         """Index all code files in a directory."""
+        if self.client is None:
+            return {"indexed": 0, "failed": 0, "total": 0, "error": "RAG unavailable"}
         indexed_count = 0
         failed_count = 0
         root_path = Path(root_path)
@@ -53,18 +75,16 @@ class LocalRAG:
         skip_dirs = {".git", "__pycache__", "node_modules", ".venv", "venv", "dist", "build"}
         
         for filepath in root_path.rglob("*"):
-            # Skip directories
             if filepath.is_dir():
                 if any(skip in filepath.parts for skip in skip_dirs):
                     continue
                 continue
             
-            # Check file extension
             if filepath.suffix in self.supported_extensions:
                 try:
                     indexed_count += self._index_file(filepath, embedding_func)
                 except Exception as e:
-                    print(f"✗ Failed to index {filepath}: {e}")
+                    print("Failed to index", filepath, ":", e)
                     failed_count += 1
         
         return {
@@ -75,6 +95,8 @@ class LocalRAG:
     
     def _index_file(self, filepath: Path, embedding_func=None) -> int:
         """Index a single file by chunking it."""
+        if self.client is None:
+            return 0
         language = self.supported_extensions.get(filepath.suffix, "text")
         
         try:
@@ -83,7 +105,6 @@ class LocalRAG:
         except Exception:
             return 0
         
-        # Split into chunks (e.g., 500 characters per chunk)
         chunk_size = 500
         chunks = [content[i:i+chunk_size] for i in range(0, len(content), chunk_size)]
         
@@ -96,13 +117,13 @@ class LocalRAG:
             embedding = embedding_func(chunk) if embedding_func else [0.0] * self.vector_size
             
             point = PointStruct(
-                id=uuid.UUID(chunk_id).int,
+                id=chunk_id,
                 vector=embedding,
                 payload={
                     "file_path": str(filepath),
                     "language": language,
                     "chunk_index": chunk_idx,
-                    "content": chunk[:1000],  # Store first 1000 chars
+                    "content": chunk[:1000],
                     "timestamp": datetime.now().isoformat(),
                     "metadata": {
                         "chunk_id": chunk_id,
@@ -122,6 +143,8 @@ class LocalRAG:
     
     def search_codebase(self, query_embedding: List[float], limit: int = 10) -> List[Dict[str, Any]]:
         """Search indexed codebase for relevant code."""
+        if self.client is None:
+            return []
         results = self.client.search(
             collection_name=self.collection_name,
             query_vector=query_embedding,
@@ -146,12 +169,15 @@ class LocalRAG:
         try:
             with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-            return content[:5000]  # Return first 5000 chars
+            return content[:5000]
         except Exception:
             return None
     
     def clear_index(self):
         """Clear the codebase index."""
+        if self.client is None:
+            return
         self.client.delete_collection(self.collection_name)
         self._initialize_collection()
-        print("✓ Codebase index cleared")
+        print("Codebase index cleared")
+

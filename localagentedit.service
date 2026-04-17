@@ -1,13 +1,14 @@
 [Unit]
-Description=LocalAgent 24/7 Background Service
+Description=LocalAgent — Private Local AI Assistant (24/7 Service)
 After=network.target docker.service
 Wants=docker.service
 
 [Service]
 Type=simple
 User=%i
-WorkingDirectory=%h/Desktop/vpn
-ExecStart=/usr/bin/python3 %h/Desktop/vpn/agent_daemon.py
+# Shippable path: Client installs to /opt/localagent
+WorkingDirectory=/opt/localagent
+ExecStart=/usr/bin/python3 /opt/localagent/agent_daemon.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -16,3 +17,12 @@ Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
+
+# Client install instructions:
+# 1. sudo mkdir -p /opt/localagent
+# 2. sudo cp -r /path/to/vpn/* /opt/localagent/
+# 3. sudo cp localagentedit.service /etc/systemd/system/
+# 4. sudo systemctl daemon-reload
+# 5. sudo systemctl enable localagentedit@killer123.service
+# 6. sudo systemctl start localagentedit@killer123.service
+

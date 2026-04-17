@@ -4,13 +4,15 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 from typing import List, Dict, Optional, Any
 import uuid
 from datetime import datetime
-import json
 
 class LocalMemory:
     """Persistent memory system using Qdrant for local knowledge storage."""
     
     def __init__(self, host: str = "localhost", port: int = 6333):
-        self.client = QdrantClient(host=host, port=port)
+        self.host = host
+        self.port = port
+        self.client: Optional[QdrantClient] = None
+        self.available = False
         self.collections = {
             "facts": "user_facts",
             "preferences": "user_preferences",
@@ -19,10 +21,27 @@ class LocalMemory:
             "learnings": "learned_patterns"
         }
         self.vector_size = 768  # nomic-embed-text output size
-        self._initialize_collections()
+        
+        self._connect()
+    
+    def _connect(self):
+        """Connect to Qdrant with error handling."""
+        try:
+            self.client = QdrantClient(host=self.host, port=self.port)
+            self._initialize_collections()
+            self.available = True
+            print("Qdrant memory ready")
+        except Exception as e:
+            print("Qdrant not available:", str(e)[:100])
+            print("Start Qdrant: docker run -d -p 6333:6333 qdrant/qdrant")
+            print("Continuing without persistent memory")
+            self.client = None
+            self.available = False
     
     def _initialize_collections(self):
         """Create collections if they don't exist."""
+        if self.client is None:
+            return
         for collection_name in self.collections.values():
             if not self.client.collection_exists(collection_name):
                 self.client.create_collection(
@@ -32,17 +51,18 @@ class LocalMemory:
                         distance=Distance.COSINE
                     )
                 )
-                print(f"✓ Created collection: {collection_name}")
+                print("Created collection:", collection_name)
     
-    def add_fact(self, fact: str, category: str = "facts", embedding: List[float] = None) -> str:
+    def add_fact(self, fact: str, embedding: Optional[List[float]] = None, category: str = "facts") -> Optional[str]:
         """Store a fact in memory with vector embedding."""
+        if self.client is None:
+            return None
+        if embedding is None:
+            embedding = [0.0] * self.vector_size
         fact_id = str(uuid.uuid4())
         
-        if embedding is None:
-            embedding = [0.0] * self.vector_size  # Placeholder
-        
         point = PointStruct(
-            id=uuid.UUID(fact_id).int,
+            id=fact_id,
             vector=embedding,
             payload={
                 "fact": fact,
@@ -61,15 +81,16 @@ class LocalMemory:
         )
         return fact_id
     
-    def add_preference(self, key: str, value: str, embedding: List[float] = None) -> str:
+    def add_preference(self, key: str, value: str, embedding: Optional[List[float]] = None) -> Optional[str]:
         """Store user preferences."""
-        pref_id = str(uuid.uuid4())
-        
+        if self.client is None:
+            return None
         if embedding is None:
             embedding = [0.0] * self.vector_size
+        pref_id = str(uuid.uuid4())
         
         point = PointStruct(
-            id=uuid.UUID(pref_id).int,
+            id=pref_id,
             vector=embedding,
             payload={
                 "key": key,
@@ -88,15 +109,16 @@ class LocalMemory:
         )
         return pref_id
     
-    def add_code_snippet(self, language: str, code: str, description: str, embedding: List[float] = None) -> str:
+    def add_code_snippet(self, language: str, code: str, description: str, embedding: Optional[List[float]] = None) -> Optional[str]:
         """Store code snippets for future reference."""
-        snippet_id = str(uuid.uuid4())
-        
+        if self.client is None:
+            return None
         if embedding is None:
             embedding = [0.0] * self.vector_size
+        snippet_id = str(uuid.uuid4())
         
         point = PointStruct(
-            id=uuid.UUID(snippet_id).int,
+            id=snippet_id,
             vector=embedding,
             payload={
                 "language": language,
@@ -118,6 +140,8 @@ class LocalMemory:
     
     def search(self, query_embedding: List[float], collection: str = "facts", limit: int = 5) -> List[Dict[str, Any]]:
         """Search memory for relevant information."""
+        if self.client is None:
+            return []
         collection_name = self.collections.get(collection, self.collections["facts"])
         
         results = self.client.search(
@@ -136,15 +160,16 @@ class LocalMemory:
             for hit in results
         ]
     
-    def add_conversation_turn(self, user_input: str, assistant_response: str, embedding: List[float] = None) -> str:
+    def add_conversation_turn(self, user_input: str, assistant_response: str, embedding: Optional[List[float]] = None) -> Optional[str]:
         """Store conversation history."""
-        conv_id = str(uuid.uuid4())
-        
+        if self.client is None:
+            return None
         if embedding is None:
             embedding = [0.0] * self.vector_size
+        conv_id = str(uuid.uuid4())
         
         point = PointStruct(
-            id=uuid.UUID(conv_id).int,
+            id=conv_id,
             vector=embedding,
             payload={
                 "user_input": user_input,
@@ -165,6 +190,8 @@ class LocalMemory:
     
     def get_collection_stats(self) -> Dict[str, Any]:
         """Get statistics about all collections."""
+        if self.client is None:
+            return {"status": "Qdrant unavailable", "available": False}
         stats = {}
         for collection_name in self.collections.values():
             try:
@@ -180,6 +207,8 @@ class LocalMemory:
     
     def clear_collection(self, collection: str):
         """Clear a specific collection."""
+        if self.client is None:
+            return
         collection_name = self.collections.get(collection)
         if collection_name:
             try:
@@ -194,3 +223,4 @@ class LocalMemory:
                         distance=Distance.COSINE
                     )
                 )
+

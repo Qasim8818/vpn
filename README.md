@@ -1,10 +1,12 @@
-# Complete VPN Curriculum — Master Index
+# LocalAgent — Private Local AI Assistant — Production Ready
 
-**Welcome to the comprehensive VPN educational system. This is your starting point.**
+**Your fully local AI coding companion: Ollama LLM + Qdrant Memory + RAG codebase search.**
+
+✅ **No internet, no tracking, always available.**
 
 ---
 
-## Curriculum Status: ✅ COMPLETE
+## Status: ✅ SHIP READY
 
 **Total phases:** 9  
 **Total pages:** 3,000+ (comprehensive)  
