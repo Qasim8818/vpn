@@ -1,0 +1,53 @@
+{
+  "agent": {
+    "name": "LocalAgent",
+    "version": "1.0.0",
+    "description": "24/7 Private, Self-Learning AI with Zero Cloud Leakage"
+  },
+  "ollama": {
+    "host": "localhost",
+    "port": 11434,
+    "model": "deepseek-r1:14b",
+    "embedding_model": "nomic-embed-text",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "thinking_budget": 8000
+  },
+  "qdrant": {
+    "host": "localhost",
+    "port": 6333,
+    "vector_size": 768,
+    "distance_metric": "cosine",
+    "collections": {
+      "facts": "user_facts",
+      "preferences": "user_preferences",
+      "code_snippets": "code_snippets",
+      "conversations": "conversation_history",
+      "learnings": "learned_patterns"
+    }
+  },
+  "rag": {
+    "collection_name": "codebase_index",
+    "chunk_size": 500,
+    "supported_extensions": [
+      ".py", ".js", ".ts", ".go", ".rs", ".java",
+      ".cpp", ".c", ".md", ".txt", ".sql",
+      ".yaml", ".json"
+    ],
+    "skip_directories": [
+      ".git", "__pycache__", "node_modules",
+      ".venv", "venv", "dist", "build"
+    ]
+  },
+  "daemon": {
+    "log_file": "agent_daemon.log",
+    "check_interval_seconds": 30,
+    "enable_health_checks": true
+  },
+  "privacy": {
+    "send_analytics": false,
+    "send_crash_reports": false,
+    "cloud_calls": false,
+    "data_retention": "forever_local_only"
+  }
+}

@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+agent_daemon.log
+
+# Test artifacts (do not ship)
+test_report.json
+test_results.json
+comprehensive_test_results.json
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker data
+docker-data/
+
+# Qdrant local data
+qdrant_storage/
